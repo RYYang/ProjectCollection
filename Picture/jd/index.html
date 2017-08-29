@@ -2,160 +2,86 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>淘宝水平滑动</title>
+	<title>京东淡入淡出</title>
 	<style type="text/css">
 		*{ margin: 0; padding: 0; text-decoration: none;}
 	    #container{
-	    	width: 520px;
-	    	height: 280px;
+	    	width: 790px;
+	    	height: 340px;
 	    	position: relative;
-	    	overflow: hidden;
 	    }
-	    #list{width: 5000px; position: absolute;
-            -webkit-animation: myleft 2s;
-            -webkit-animation-timing-function: linear;
-            @-webkit-keyframes myleft /* Safari 和 Chrome */
-                {
-                from   {left:-520px;}
-                to {left:-2600px;}
-                }
-        }
-	    #list img{float: left;}
-	    #buttons { position: absolute; height: 10px; width: 100px; z-index: 2; bottom: 20px; left: 210px;}
+	    #list{width: 790px; position: absolute;}
+	    #list img{position: absolute;opacity: 0;
+            transition: all 1s;
+            -moz-transition: all 1s;
+            -webkit-transition: all 1s;
+            -o-transition:all 1s;
+}
+	    #buttons { position: absolute; height: 10px; width: 100px; z-index: 2; bottom: 20px; left: 345px;}
 	    #buttons span { cursor: pointer; float: left; border: 1px solid #fff; width: 10px; height: 10px; border-radius: 50%; background: #c0c0c0; margin-right: 5px;}
 	    #buttons .on {  background: orangered;}
-	    .arrow { cursor: pointer; display: none; line-height: 39px; text-align: center; font-size: 36px; font-weight: bold; width: 60px; height: 40px; transform:scaleX(0.4); position: absolute; z-index: 2; top: 120px; background-color: RGBA(0,0,0,.3); color: #fff;}
+	    .arrow { cursor: pointer; display: none; line-height: 39px; text-align: center; font-size: 36px; font-weight: bold; width: 60px; height: 40px; transform:scaleX(0.4); position: absolute; z-index: 2; top: 150px; background-color: RGBA(0,0,0,.3); color: #fff;}
 	    .arrow:hover { background-color: RGBA(0,0,0,.7);}
         #container:hover .arrow { display: block;}
         #prev { left: -20px;}
-        #next { right:-20px;}
+        #next { right:-18px;}
 	</style>
 	<script type="text/javascript">
-
-        window.onload = function () {
+		window.onload = function () {
             var container = document.getElementById('container');
-            var list = document.getElementById('list');
             var buttons = document.getElementById('buttons').getElementsByTagName('span');
+            var list = document.getElementById('list').getElementsByTagName('img');
             var prev = document.getElementById('prev');
             var next = document.getElementById('next');
-            var index = 1;
-            var len = 5;
-            var animated = false;
-            var interval = 3000;
-            var timer;
-
-
-            function animate (offset) {
-                if (offset == 0) {
-                    return;
-                }
-                animated = true;
-                var time = 300;
-                var inteval = 10;
-                var speed = offset/(time/inteval);
-                var left = parseInt(list.style.left) + offset;
-
-                var go = function (){
-                    if ( (speed > 0 && parseInt(list.style.left) < left) || (speed < 0 && parseInt(list.style.left) > left)) {
-                        list.style.left = parseInt(list.style.left) + speed + 'px';
-                        setTimeout(go, inteval);
-                    }
-                    else {
-                        list.style.left = left + 'px';
-                        if(left>-200){
-                            list.style.left = -520 * len + 'px';
-                        }
-                        if(left<(-520 * len)) {
-                            list.style.left = '-520px';
-                        }
-                        animated = false;
-                    }
-                }
-                go();
+            var index=1;
+            next.onclick=function(){
+                list[index-1].style.opacity= 0;
+                buttons[index-1].className = '';
+                index++;
+                if(index==6) index=1;
+                list[index-1].style.opacity= 1;
+                buttons[index-1].className = 'on';
             }
-
-            function showButton() {
-                for (var i = 0; i < buttons.length ; i++) {
-                    if( buttons[i].className == 'on'){
-                        buttons[i].className = '';
-                        break;
-                    }
-                }
-                buttons[index - 1].className = 'on';
+            prev.onclick=function(){
+                list[index-1].style.opacity= 0;
+                buttons[index-1].className = '';
+                index--;
+                if(index==0) index=5;
+                list[index-1].style.opacity= 1;
+                buttons[index-1].className = 'on';
             }
-
+            for (var i = 0; i < 5; i++){
+                buttons[i].onclick = function () {
+                        buttons[index-1].className = '';
+                        var myIndex = parseInt(this.getAttribute('index')); 
+                        buttons[myIndex-1].className = 'on';
+                        list[index-1].style.opacity= 0;
+                        list[myIndex-1].style.opacity= 1;
+                        index=myIndex;
+                }
+            }
+            
             function play() {
-                timer = setTimeout(function () {
-                    next.onclick();
-                    play();
-                }, interval);
+                timer = setInterval(function(){ next.onclick(); }, 3000);
             }
             function stop() {
                 clearTimeout(timer);
             }
-
-            next.onclick = function () {
-                if (animated) {
-                    return;
-                }
-                if (index == 5) {
-                    index = 1;
-                }
-                else {
-                    index += 1;
-                }
-                animate(-520);
-                showButton();
-            }
-            prev.onclick = function () {
-                if (animated) {
-                    return;
-                }
-                if (index == 1) {
-                    index = 5;
-                }
-                else {
-                    index -= 1;
-                }
-                animate(520);
-                showButton();
-            }
-
-            for (var i = 0; i < buttons.length; i++) {
-                buttons[i].onclick = function () {
-                    if (animated) {
-                        return;
-                    }
-                    if(this.className == 'on') {
-                        return;
-                    }
-                    var myIndex = parseInt(this.getAttribute('index'));
-                    var offset = -520 * (myIndex - index);
-
-                    animate(offset);
-                    index = myIndex;
-                    showButton();
-                }
-            }
-
             container.onmouseover = stop;
             container.onmouseout = play;
 
             play();
-
         }
-    </script>
+	</script>
 </head>
 <body>
 	<div id="container">
-		<div id="list" style="left:-520px;">
-			<img src="img/5.jpg">
-			<img src="img/1.jpg">
-			<img src="img/2.jpg">
-			<img src="img/3.jpg">
-			<img src="img/4.jpg">
-			<img src="img/5.jpg">
-			<img src="img/1.jpg">
+		<div id="list" >
+			<img index="1"  style="opacity: 1;" src="img/1.jpg">
+			<img index="2"  src="img/2.jpg">
+			<img index="3"  src="img/3.jpg">
+			<img index="4"  src="img/4.jpg">
+			<img index="5"  src="img/5.jpg">
 		</div>
 		<div id="buttons">
         	<span index="1" class="on"></span>
